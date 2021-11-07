@@ -12,6 +12,7 @@ import re
 import requests
 import json
 import pandas as pd
+import time
 
 
 # account credentials
@@ -61,105 +62,86 @@ def send_pushover(message='testing', title='Binance Email OTP', priority='1', so
     return r.status_code
 
 
+def run():
 
-# create an IMAP4 class with SSL
-imap = imaplib.IMAP4_SSL(os.getenv('OTP_IMAP_SERVER'))
-# authenticate
-imap.login(username, password)
-
-
-status, messages = imap.select("INBOX")
-# number of top emails to fetch
-N = 3
-# total number of emails
-messages = int(messages[0])
+  # create an IMAP4 class with SSL
+  imap = imaplib.IMAP4_SSL(os.getenv('OTP_IMAP_SERVER'))
+  # authenticate
+  imap.login(username, password)
 
 
-for i in range(messages, messages-N, -1):
-    # fetch the email message by ID
-    res, msg = imap.fetch(str(i), "(RFC822)")
-    for response in msg:
-        if isinstance(response, tuple):
-            # parse a bytes email into a message object
-            msg = email.message_from_bytes(response[1])
+  status, messages = imap.select("INBOX")
+  # number of top emails to fetch
+  N = 3
+  # total number of emails
+  messages = int(messages[0])
 
-            # decode the email subject
-            subject, encoding = decode_header(msg["Subject"])[0]
-            if isinstance(subject, bytes):
-                # if it's a bytes, decode to str
-                subject = subject.decode(encoding)
 
-            # decode email sender
-            From, encoding = decode_header(msg.get("From"))[0]
-            if isinstance(From, bytes):
-                From = From.decode(encoding)
+  for i in range(messages, messages-N, -1):
+      # fetch the email message by ID
+      res, msg = imap.fetch(str(i), "(RFC822)")
+      for response in msg:
+          if isinstance(response, tuple):
+              # parse a bytes email into a message object
+              msg = email.message_from_bytes(response[1])
 
-            # decode email sender
-            Date, encoding = decode_header(msg.get("Date"))[0]
-            if isinstance(Date, bytes):
-                Date = Date.decode(encoding)
+              # decode the email subject
+              subject, encoding = decode_header(msg["Subject"])[0]
+              if isinstance(subject, bytes):
+                  # if it's a bytes, decode to str
+                  subject = subject.decode(encoding)
 
-            Message_id, encoding = decode_header(msg.get("Message-ID"))[0]
-            if isinstance(Message_id, bytes):
-                Message_id = Message_id.decode(encoding)
+              # decode email sender
+              From, encoding = decode_header(msg.get("From"))[0]
+              if isinstance(From, bytes):
+                  From = From.decode(encoding)
 
-            rich_body = msg.get_payload()
+              # decode email sender
+              Date, encoding = decode_header(msg.get("Date"))[0]
+              if isinstance(Date, bytes):
+                  Date = Date.decode(encoding)
 
-            try:
-              body = html2text.html2text(base64.urlsafe_b64decode(rich_body.replace('-_', '+/').encode('ASCII')).decode())
-            except:
-              pass
+              Message_id, encoding = decode_header(msg.get("Message-ID"))[0]
+              if isinstance(Message_id, bytes):
+                  Message_id = Message_id.decode(encoding)
 
-            for line in body.splitlines():
+              rich_body = msg.get_payload()
 
-              otps = re.findall(r'^\d{6,6}\s', line)
-
-              if len(otps) == 1 and 'Your verification code' in body:
-
-                otp = otps[0]
-
-                data = {
-                  'subject': subject,
-                  'from': From,
-                  'date': Date,
-                  'id': Message_id,
-                  'otp': otp
-                }
-
-                previous_emails_list = fetch_previous_emails()
-
-                if Message_id not in previous_emails_list:
-                  for k,v in data.items():
-                    print(k,v)
-                  save_email(data)
-                  send_pushover(message=otp)
-
-                break
-
-              #print(msg.as_string())
-
-              # get the email body
-              '''try:
-                rich_body = msg.get_payload()
+              try:
                 body = html2text.html2text(base64.urlsafe_b64decode(rich_body.replace('-_', '+/').encode('ASCII')).decode())
               except:
-                break'''
+                pass
 
+              for line in body.splitlines():
 
+                otps = re.findall(r'^\d{6,6}\s', line)
 
-                #for line in body.splitlines():
+                if len(otps) == 1 and 'Your verification code' in body:
 
-              '''print('-'*60)
-              print('Subject:', subject)
-              print('Sender:', From)
-              print('Date:', Date)
-              print('otp:', otp)
+                  otp = otps[0]
 
-              save_email(data)'''
+                  data = {
+                    'subject': subject,
+                    'from': From,
+                    'date': Date,
+                    'id': Message_id,
+                    'otp': otp
+                  }
 
+                  previous_emails_list = fetch_previous_emails()
 
+                  if Message_id not in previous_emails_list:
+                    for k,v in data.items():
+                      print(k,v)
+                    save_email(data)
+                    send_pushover(message=otp)
 
+                  break
 
-# close the connection and logout
-imap.close()
-imap.logout()
+  # close the connection and logout
+  imap.close()
+  imap.logout()
+
+while True:
+  run()
+  time.sleep(6)
