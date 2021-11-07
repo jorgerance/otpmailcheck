@@ -155,16 +155,13 @@ def run():
   imap.logout()
 
 
+if __name__ == "__main__":
 
-print('Running...')
+  print('Running...')
 
-animation = ["[■□□□□□□□□□]","[■■□□□□□□□□]", "[■■■□□□□□□□]", "[■■■■□□□□□□]", "[■■■■■□□□□□]", "[■■■■■■□□□□]", "[■■■■■■■□□□]", "[■■■■■■■■□□]", "[■■■■■■■■■□]", "[■■■■■■■■■■]"]
+  while True:
+    run()
 
-while True:
-  run()
-  for i in range(len(animation)):
-      time.sleep(0.2)
-      sys.stdout.write("\r" + animation[i % len(animation)])
-      sys.stdout.flush()
 
-  time.sleep(10)
+    time.sleep(7)
+    print('.')
