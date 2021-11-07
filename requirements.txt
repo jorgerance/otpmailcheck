@@ -1,4 +1,4 @@
 pandas==1.2.4
 requests==2.25.1
 html2text==2020.1.16
-pytx==0.5.10
+pytz==0.5.10

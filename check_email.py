@@ -15,7 +15,7 @@ import pandas as pd
 import time
 import sys
 import datetime
-import pytx
+import pytz
 
 
 # account credentials
