@@ -13,6 +13,7 @@ import requests
 import json
 import pandas as pd
 import time
+import sys
 
 
 # account credentials
@@ -20,6 +21,17 @@ username = os.getenv('OTP_EMAIL_USER')
 password = os.getenv('OTP_EMAIL_PASS')
 
 email_archive = "emails.json"
+
+
+
+def animated_loading():
+    chars = "/—\|"
+    for char in chars:
+        sys.stdout.write('\r'+'Running...'+char)
+        time.sleep(.1)
+        sys.stdout.flush()
+
+
 
 def fetch_previous_emails(file=email_archive):
     id_list = []
@@ -142,6 +154,16 @@ def run():
   imap.close()
   imap.logout()
 
-while True:
-  run()
-  time.sleep(6)
+
+if __name__ == "__main__":
+
+  animation = ["[■□□□□□□□□□]","[■■□□□□□□□□]", "[■■■□□□□□□□]", "[■■■■□□□□□□]", "[■■■■■□□□□□]", "[■■■■■■□□□□]", "[■■■■■■■□□□]", "[■■■■■■■■□□]", "[■■■■■■■■■□]", "[■■■■■■■■■■]"]
+
+  while True:
+    run()
+    for i in range(len(animation)):
+        time.sleep(0.2)
+        sys.stdout.write("\r" + animation[i % len(animation)])
+        sys.stdout.flush()
+
+    time.sleep(10)
