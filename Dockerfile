@@ -36,4 +36,4 @@ RUN pip3 install --trusted-host pypi.python.org -r /tmp/requirements.txt
 USER 1000
 WORKDIR /app
 
-CMD [ "python3", "check_email.py" ]
+CMD [ "./check_email.py" ]
