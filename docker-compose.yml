@@ -1,10 +1,10 @@
 version: '3'
 services:
-  web:
+  runner:
     image: otpmail
     env_file: ./.env
-    networks:
-      - traefik-public
+    #networks:
+    #  - traefik-public
     volumes:
       - .:/app
     deploy:
@@ -12,6 +12,6 @@ services:
         limits:
           memory: 150M
 
-networks:
-  traefik-public:
-    external: true
+#networks:
+#  traefik-public:
+#    external: true
