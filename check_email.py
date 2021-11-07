@@ -14,6 +14,7 @@ import json
 import pandas as pd
 import time
 import sys
+import datetime
 
 
 # account credentials
@@ -23,6 +24,12 @@ password = os.getenv('OTP_EMAIL_PASS')
 email_archive = "emails.json"
 
 
+def todays_date(seconds=True):
+    today = datetime.datetime.now(pytz.timezone('Europe/Madrid'))
+    today_str = today.strftime("%d/%m/%Y - %H:%M")
+    if seconds:
+        today_str = today.strftime("%d/%m/%Y - %H:%M:%S.%f")[:-3]
+    return(today_str)
 
 def animated_loading():
     chars = "/—\|"
@@ -164,4 +171,4 @@ if __name__ == "__main__":
 
 
     time.sleep(7)
-    print('.')
+    print(todays_date())
