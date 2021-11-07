@@ -3,10 +3,6 @@
 
 FROM ubuntu:20.04
 
-# Install g++ for compilig uWSGI
-
-COPY ./requirements.txt /tmp/
-
 ENV PYTHONUNBUFFERED 1
 #RUN python -m pip install pip==9.0.3
 #RUN pip install cython
@@ -22,6 +18,8 @@ ENV LC_ALL en_US.UTF-8
 RUN pip3 install --trusted-host pypi.python.org cython
 RUN pip3 install --trusted-host pypi.python.org --upgrade pip setuptools wheel
 #RUN pip3 install --trusted-host pypi.python.org pandas
+
+COPY ./requirements.txt /tmp/
 RUN pip3 install --trusted-host pypi.python.org -r /tmp/requirements.txt
 
 ###########################################
