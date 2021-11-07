@@ -17,13 +17,8 @@ import pandas as pd
 # account credentials
 username = os.getenv('OTP_EMAIL_USER')
 password = os.getenv('OTP_EMAIL_PASS')
-imap_server = os.getenv('OTP_IMAP_SERVER')
-pushover_app_token = os.getenv('PUSHOVER_APP_TOKEN')
-pushover_user_token = os.getenv('PUSHOVER_USER_TOKEN')
-
 
 email_archive = "emails.json"
-
 
 def fetch_previous_emails(file=email_archive):
     id_list = []
@@ -59,8 +54,8 @@ def clean(text):
 
 
 def send_pushover(message='testing', title='Binance Email OTP', priority='1', sound='intermission'):
-    app_token = pushover_app_token
-    user_token = pushover_user_token
+    app_token = os.getenv('PUSHOVER_APP_TOKEN')
+    user_token = os.getenv('PUSHOVER_USER_TOKEN')
     r = requests.post("https://api.pushover.net/1/messages.json", data={"token":app_token,"user":user_token,"message":message, "title": title, "priority": priority, "sound": sound})
 
     return r.status_code
@@ -68,7 +63,7 @@ def send_pushover(message='testing', title='Binance Email OTP', priority='1', so
 
 
 # create an IMAP4 class with SSL
-imap = imaplib.IMAP4_SSL(imap_server)
+imap = imaplib.IMAP4_SSL(os.getenv('OTP_IMAP_SERVER'))
 # authenticate
 imap.login(username, password)
 
