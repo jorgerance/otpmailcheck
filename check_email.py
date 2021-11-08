@@ -16,11 +16,23 @@ import time
 import sys
 import datetime
 import pytz
+import configparser
+
+
+import configparser
+import time
+
+config_file = "{}/{}".format(os.path.dirname(os.path.realpath(__file__)), 'config.ini')
+
+config = configparser.ConfigParser()
+config.read(config_file)
 
 
 # account credentials
-username = os.getenv('OTP_EMAIL_USER')
-password = os.getenv('OTP_EMAIL_PASS')
+username = config['credentials']['OTP_EMAIL_USER']
+password = config['credentials']['OTP_EMAIL_PASS']
+
+print(username)
 
 email_archive = "emails.json"
 
@@ -75,8 +87,8 @@ def clean(text):
 
 
 def send_pushover(message='testing', title='Binance Email OTP', priority='1', sound='intermission'):
-    app_token = os.getenv('PUSHOVER_APP_TOKEN')
-    user_token = os.getenv('PUSHOVER_USER_TOKEN')
+    app_token = config['credentials']['PUSHOVER_APP_TOKEN']
+    user_token = config['credentials']['PUSHOVER_USER_TOKEN']
     r = requests.post("https://api.pushover.net/1/messages.json", data={"token":app_token,"user":user_token,"message":message, "title": title, "priority": priority, "sound": sound})
 
     return r.status_code
@@ -85,7 +97,7 @@ def send_pushover(message='testing', title='Binance Email OTP', priority='1', so
 def run():
 
   # create an IMAP4 class with SSL
-  imap = imaplib.IMAP4_SSL(os.getenv('OTP_IMAP_SERVER'))
+  imap = imaplib.IMAP4_SSL(config['credentials']['OTP_IMAP_SERVER'])
   # authenticate
   imap.login(username, password)
 
@@ -110,6 +122,8 @@ def run():
               if isinstance(subject, bytes):
                   # if it's a bytes, decode to str
                   subject = subject.decode(encoding)
+
+              print(subject)
 
               # decode email sender
               From, encoding = decode_header(msg.get("From"))[0]
@@ -136,7 +150,7 @@ def run():
 
                 otps = re.findall(r'^\d{6,6}\s', line)
 
-                if len(otps) == 1 and 'Your verification code' in body:
+                if len(otps) == 1 and 'erification code' in body:
 
                   otp = otps[0]
 
