@@ -123,8 +123,6 @@ def run():
                   # if it's a bytes, decode to str
                   subject = subject.decode(encoding)
 
-              print(subject)
-
               # decode email sender
               From, encoding = decode_header(msg.get("From"))[0]
               if isinstance(From, bytes):
