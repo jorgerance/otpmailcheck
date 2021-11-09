@@ -142,6 +142,7 @@ def run():
               try:
                 body = html2text.html2text(base64.urlsafe_b64decode(rich_body.replace('-_', '+/').encode('ASCII')).decode())
               except:
+                body = ""
                 pass
 
               for line in body.splitlines():
