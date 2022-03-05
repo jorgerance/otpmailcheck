@@ -12,7 +12,7 @@ if [[ $1 == 'reload' ]]; then
   cp $SCRIPT_DIR/${plist} ~/Library/LaunchAgents/${plist}
   launchctl unload ~/Library/LaunchAgents/${plist}
   launchctl load ~/Library/LaunchAgents/${plist}
-
+else
   # Run the consumer with 2 worker threads.
   export SHELL=/opt/homebrew/bin/bash
   source ~/.profile
