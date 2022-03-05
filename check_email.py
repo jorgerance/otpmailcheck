@@ -12,6 +12,7 @@ import re
 import requests
 import json
 import pandas as pd
+from pprint import pprint
 import time
 import sys
 import datetime
@@ -94,95 +95,112 @@ def send_pushover(message='testing', title='Binance Email OTP', priority='1', so
     return r.status_code
 
 
+def list_imap_folders(imap):
+    for i in imap.list()[1]:
+        l = i.decode().split(' "/" ')
+        print(l[0] + " = " + l[1])
+
+
 def run():
 
-  # create an IMAP4 class with SSL
-  imap = imaplib.IMAP4_SSL(config['credentials']['OTP_IMAP_SERVER'])
-  # authenticate
-  imap.login(username, password)
+    # create an IMAP4 class with SSL
+    imap = imaplib.IMAP4_SSL(config['credentials']['OTP_IMAP_SERVER'])
+    # authenticate
+    imap.login(username, password)
 
 
-  status, messages = imap.select("INBOX")
-  # number of top emails to fetch
-  N = 3
-  # total number of emails
-  messages = int(messages[0])
+
+    for folder in ['INBOX', 'Notification']:
+        status, messages = imap.select(folder)
+        # number of top emails to fetch
+        N = 3
+        # total number of emails
+        messages = int(messages[0])
 
 
-  for i in range(messages, messages-N, -1):
-      # fetch the email message by ID
-      res, msg = imap.fetch(str(i), "(RFC822)")
-      for response in msg:
-          if isinstance(response, tuple):
-              # parse a bytes email into a message object
-              msg = email.message_from_bytes(response[1])
+        for i in range(messages, messages-N, -1):
+            pushed = False
+            # fetch the email message by ID
+            res, msg = imap.fetch(str(i), "(RFC822)")
+            for response in msg:
+                if isinstance(response, tuple):
+                    # parse a bytes email into a message object
+                    msg = email.message_from_bytes(response[1])
 
-              # decode the email subject
-              subject, encoding = decode_header(msg["Subject"])[0]
-              if isinstance(subject, bytes):
-                  # if it's a bytes, decode to str
-                  subject = subject.decode(encoding)
+                    # decode the email subject
+                    subject, encoding = decode_header(msg["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        # if it's a bytes, decode to str
+                        subject = subject.decode(encoding)
 
-              # decode email sender
-              From, encoding = decode_header(msg.get("From"))[0]
-              if isinstance(From, bytes):
-                  From = From.decode(encoding)
+                    # decode email sender
+                    From, encoding = decode_header(msg.get("From"))[0]
+                    if isinstance(From, bytes):
+                        From = From.decode(encoding)
 
-              # decode email sender
-              Date, encoding = decode_header(msg.get("Date"))[0]
-              if isinstance(Date, bytes):
-                  Date = Date.decode(encoding)
+                    # decode email sender
+                    Date, encoding = decode_header(msg.get("Date"))[0]
+                    if isinstance(Date, bytes):
+                        Date = Date.decode(encoding)
 
-              Message_id, encoding = decode_header(msg.get("Message-ID"))[0]
-              if isinstance(Message_id, bytes):
-                  Message_id = Message_id.decode(encoding)
+                    Message_id, encoding = decode_header(msg.get("Message-ID"))[0]
+                    if isinstance(Message_id, bytes):
+                        Message_id = Message_id.decode(encoding)
 
-              rich_body = msg.get_payload()
+                    rich_body = msg.get_payload()
 
-              try:
-                body = html2text.html2text(base64.urlsafe_b64decode(rich_body.replace('-_', '+/').encode('ASCII')).decode())
-              except:
-                body = ""
-                pass
+                    #for i in msg:
+                    #print(msg['MIME-Version'])
+                    #print('----------------------------------')
 
-              for line in body.splitlines():
+                    try:
+                        body = html2text.html2text(base64.urlsafe_b64decode(rich_body.replace('-_', '+/').encode('ASCII')).decode())
+                    except:
+                        body = ""
+                        pass
 
-                otps = re.findall(r'^\d{6,6}\s', line)
 
-                if len(otps) == 1 and 'erification code' in body:
+                    for line in body.splitlines():
 
-                  otp = otps[0]
+                        otps = re.findall(r'^\d{6,6}\s', line)
 
-                  data = {
-                    'subject': subject,
-                    'from': From,
-                    'date': Date,
-                    'id': Message_id,
-                    'otp': otp
-                  }
+                        if len(otps) == 1 and 'erification code' in body:
 
-                  previous_emails_list = fetch_previous_emails()
+                            otp = otps[0]
 
-                  if Message_id not in previous_emails_list:
-                    for k,v in data.items():
-                      print(k,v)
-                    save_email(data)
-                    send_pushover(message=otp)
+                            data = {
+                                'subject': subject,
+                                'from': From,
+                                'date': Date,
+                                'id': Message_id,
+                                'otp': otp
+                            }
 
-                  break
 
-  # close the connection and logout
-  imap.close()
-  imap.logout()
+
+                            previous_emails_list = fetch_previous_emails()
+
+                            if Message_id not in previous_emails_list and not pushed:
+                                pushed = True
+                                print('----------------------------------------')
+                                pprint(data)
+                                save_email(data)
+                                send_pushover(message=otp)
+
+                                break
+
+        # close the connection and logout
+    imap.close()
+    imap.logout()
 
 
 if __name__ == "__main__":
 
-  print('Running...')
+    print('Running...')
 
-  while True:
-    run()
+    while True:
+        run()
 
 
-    time.sleep(7)
-    print(todays_date())
+        time.sleep(5)
+        print(todays_date())
