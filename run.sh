@@ -5,12 +5,13 @@
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 export PYTHONPATH="${SCRIPT_DIR}/:$PYTHONPATH"
 export PATH="/opt/homebrew/bin/:$PATH"
+plist="com.j.osx.otp_mailcheck.plist"
 
 if [[ $1 == 'reload' ]]; then
-  echo "Updating and reloading huey mster service: com.j.osx.trailinghuey.plist"
-  cp $SCRIPT_DIR/com.j.osx.otp_mailcheck.plist ~/Library/LaunchAgents/com.j.osx.otp_mailcheck.plist
-  launchctl unload ~/Library/LaunchAgents/com.j.osx.otp_mailcheck.plist
-  launchctl load ~/Library/LaunchAgents/com.j.osx.otp_mailcheck.plist
+  echo "Updating and reloading huey mster service: ${plist}"
+  cp $SCRIPT_DIR/${plist} ~/Library/LaunchAgents/${plist}
+  launchctl unload ~/Library/LaunchAgents/${plist}
+  launchctl load ~/Library/LaunchAgents/${plist}
 
   # Run the consumer with 2 worker threads.
   export SHELL=/opt/homebrew/bin/bash
