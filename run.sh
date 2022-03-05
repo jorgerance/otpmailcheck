@@ -29,5 +29,5 @@ if [[ $1 == 'reload' ]]; then
     #/usr/bin/env bash -l -c "cd ${SCRIPT_DIR}; huey_consumer.py master.huey -w4"
   fi
   cd ${SCRIPT_DIR}
-  python check_email.py
+  python3 check_email.py
 fi
